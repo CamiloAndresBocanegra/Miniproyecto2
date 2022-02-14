@@ -9,21 +9,18 @@ public class FileManager {
     BufferedReader bufferReader;
     FileWriter fileWriter;
     BufferedWriter bufferWriter;
-    final String FilePath = "src/resources/fileText.txt";
+    final String RESOURCES_PATH = "src/resources/";
 
-    final int NumberOfLines = 3;
-
-
-    public ArrayList<String> ReadFileInArray() {
+    public ArrayList<String> readFileInArray(String fileName) {
         ArrayList<String> TextRead = new ArrayList<String>();
 
         try {
-            fileReader = new FileReader(FilePath);
+            fileReader = new FileReader(RESOURCES_PATH + fileName);
             bufferReader = new BufferedReader(fileReader);
             String line = bufferReader.readLine();
 
             while(line != null){
-                TextRead.add(line + "\n");
+                TextRead.add(line);
                 line = bufferReader.readLine();
             } // ERROR CODE{ -------------------------------------------------------
         } catch (FileNotFoundException e) {
@@ -40,10 +37,10 @@ public class FileManager {
         return TextRead;
     }
 
-    public String ReadFileInString() {
+    public String readFileInString(String fileName) {
         String TextRead = "";
         try {
-            fileReader = new FileReader(FilePath);
+            fileReader = new FileReader(RESOURCES_PATH + fileName);
             bufferReader = new BufferedReader(fileReader);
             String line = bufferReader.readLine();
             while(line != null){
@@ -65,9 +62,9 @@ public class FileManager {
         return TextRead;
     }
 
-    public void WriteFile(String newLine){
+    public void writeLine(String filename, String newLine){
         try {
-            fileWriter = new FileWriter(FilePath,true);
+            fileWriter = new FileWriter(RESOURCES_PATH + filename,true);
             bufferWriter = new BufferedWriter(fileWriter);
             bufferWriter.write(newLine);
             bufferWriter.newLine();

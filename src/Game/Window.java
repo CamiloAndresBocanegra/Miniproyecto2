@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.sql.Array;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -23,13 +24,32 @@ public class Window extends JFrame
     JButton initTimer;
     CustomTimer timer;
     JPanel squareColor;
-    JTextField textLine;
-    JTextArea textArea;
+    JTextField textLineField;
+    JTextArea textOutput;
     FileManager fileManager;
-    LineInputListener listener;
+
+    boolean isFirstPass;
+    JPanel centerPanel;
+    CardLayout cl;
+    JPanel levelSelectorPanel;
+
+    LevelSelectorListener levelSelectorListener;
     TimerListener timerListener;
     InitTimerListener initTimerListener;
     Random random;
+
+    LineInputListener lineInputListener;
+
+    //GameState
+    int selectedLevel; //might not be necesary
+    ArrayList<String> usersFileLines;
+    int currentUserIndex;
+    int currentMaxLevel;
+    int currentTotalWords;
+
+    final int TOTAL_LEVELS = 8;
+    final String LEVEL_SELECTOR = "levelselector";
+    final String TEXT_OUTPUT = "textoutput";
     //
     /**
      * Constructor of GUI class
@@ -54,27 +74,47 @@ public class Window extends JFrame
      * create Listener and control Objects used for the GUI class
      */
     private void initWindow() {
-        //Set up JFrame Container's Layout
-        //Create Listener Object and Control Object
-        //Set up JComponents
-        headerProject = new Header("test", Color.BLACK);
-        add(headerProject,BorderLayout.NORTH);
+        fileManager = new FileManager();
+        textLineField = new JTextField();
+        lineInputListener = new LineInputListener();
+        textLineField.addActionListener(lineInputListener);
+        textLineField.setFocusable(true);
+        add(textLineField, BorderLayout.SOUTH);
 
-        timerListener = new TimerListener();
-        timer = new CustomTimer(1000,timerListener);
-        random = new Random();
+        textOutput = new JTextArea();
+        textOutput.setFocusable(false);
+        // Setting up level selector
+        levelSelectorPanel = new JPanel();
+        levelSelectorPanel.setLayout(new GridLayout(2,4));
+        levelSelectorListener = new LevelSelectorListener();
+        for(int i = 0;
+            i < TOTAL_LEVELS;
+            i++)
+        { // Creating level selector buttons
+            JButton button = new JButton("Level "+ (i+1));
+            button.addActionListener(levelSelectorListener);
+            levelSelectorPanel.add(button);
+        }
+        // Setting up main panel
+        centerPanel = new JPanel();
+        centerPanel.setLayout(new CardLayout());
+        cl = (CardLayout) centerPanel.getLayout();
+        add(centerPanel, BorderLayout.CENTER);
+
+        centerPanel.add(levelSelectorPanel, LEVEL_SELECTOR);
+        centerPanel.add(textOutput, TEXT_OUTPUT);
+
+        cl.show(centerPanel, TEXT_OUTPUT);
+
+        // end
+        textLineField.grabFocus();
+
+//        timerListener = new TimerListener();
+//        timer = new CustomTimer(100, timerListener);
+//        timer.start();
+//        random = new Random();
     }
 
-    /**
-     * Main process of the Java program
-     * @param args Object used in order to send input data from command line when
-     *             the program is execute by console.
-     */
-    public static void main(String[] args){
-        EventQueue.invokeLater(() -> {
-            Window miProjectGUI = new Window();
-        });
-    }
 
     /**
      * inner class that extends an Adapter Class or implements Listeners used by GUI class
@@ -82,8 +122,28 @@ public class Window extends JFrame
     private class LineInputListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            fileManager.WriteFile(textLine.getText());
-            textArea.setText(fileManager.ReadFileInString());
+            usersFileLines = (fileManager.readFileInArray("users.txt"));
+            String lineInput = textLineField.getText();
+            textLineField.setText("");
+            for(int lineIndex = 0;
+                lineIndex < usersFileLines.size();
+                lineIndex++)
+            {
+                String[] userArray = usersFileLines.get(lineIndex).split(";");
+                if(lineInput.equals(userArray[0]))
+                {
+                    textOutput.append("name found\n");
+                    currentUserIndex = lineIndex;
+                    currentMaxLevel = Integer.parseInt(userArray[1]);
+
+                    cl.show(centerPanel, LEVEL_SELECTOR);
+                    return;
+                }
+            }
+            usersFileLines.add(lineInput+ ";1");
+            fileManager.writeLine("users.txt", lineInput+";1");
+            textOutput.append("not found, name added\n");
+            cl.show(centerPanel, LEVEL_SELECTOR);
         }
     }
 
@@ -94,18 +154,23 @@ public class Window extends JFrame
         @Override
         public void actionPerformed(ActionEvent e)
         {
-            squareColor.setBackground(new Color(
-                    random.nextInt(256),
-                    random.nextInt(256),
-                    random.nextInt(256)));
-
-            timer.incrementSecond();
-            if (timer.getCurrentSecond() >= 7) {
+            if(isFirstPass)
+            {
+                isFirstPass = false;
                 timer.stop();
-                //initTimer.setVisible(true);
-                initTimer.setEnabled(true);
-                initTimer.addActionListener(timerListener);
+                return;
             }
+//            squareColor.setBackground(new Color(
+//                    random.nextInt(256),
+//                    random.nextInt(256),
+//                    random.nextInt(256)));
+//
+//            timer.incrementSecond();
+//            if (timer.getCurrentSecond() >= 7) {
+//                timer.stop();
+//                //initTimer.setVisible(true);
+//                initTimer.setEnabled(true);
+//                initTimer.addActionListener(timerListener);
         }
     }
 
@@ -122,14 +187,60 @@ public class Window extends JFrame
         }
     }
 
+    private class LevelSelectorListener implements ActionListener
+    {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String buttonText = ((JButton)e.getSource()).getText();
+            // this gets the last character of the button text, which is the number of the level.
+            selectedLevel = Integer.parseInt(buttonText.substring(buttonText.length() - 1));
+            switch(selectedLevel)
+            {
+                case 1: currentTotalWords = 10;break;
+                case 2: currentTotalWords = 20;break;
+                case 3: currentTotalWords = 25;break;
+                case 4: currentTotalWords = 30;break;
+                case 5: currentTotalWords = 35;break;
+                case 6: currentTotalWords = 40;break;
+                case 7: currentTotalWords = 50;break;
+                case 8:
+                default: currentTotalWords = 60;break;
+            }
+            cl.show(centerPanel, TEXT_OUTPUT);
+        }
+    }
+
     /**
      * inner class that extends an Adapter Class or implements Listeners used by GUI class
      */
-    private class KeyListener extends KeyAdapter {
+    private class TestListener implements ActionListener {
+        int counter = 0;
         @Override
-        public void keyTyped(KeyEvent e) {
-            super.keyTyped(e);
-            canvas.dibujarParte();
+        public void actionPerformed(ActionEvent e)
+        {
+//            CardLayout cl = (CardLayout)cardsTest.getLayout();
+//            String aaa = BUTTONPANEL;
+//            if(counter%3 == 0)
+//            {
+//                cl.show(cardsTest, aaa);
+//            }else if(counter%3 == 1)
+//            {
+//                cl.show(cardsTest, TEXTPANEL);
+//            }else{
+//                cl.show(cardsTest, SCROLLPANEL);
+//            }
+//            counter++;
         }
+    }
+
+    /**
+     * Main process of the Java program
+     * @param args Object used in order to send input data from command line when
+     *             the program is execute by console.
+     */
+    public static void main(String[] args){
+        EventQueue.invokeLater(() -> {
+            Window miProjectGUI = new Window();
+        });
     }
 }
