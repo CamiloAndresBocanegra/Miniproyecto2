@@ -48,10 +48,10 @@ public class Canvas extends JPanel {
                 g.fillOval(290,100,90,55);
                 break;
             case 5:g.setColor(Color.GREEN);
-                g.drawString("Draw Images",20,22);
-                ImageIcon image = new ImageIcon(getClass().getResource("/resources/1.png"));
-                g.drawImage(image.getImage(),7,40,90,90,null);
-                break;
+//                g.drawString("Draw Images",20,22);
+//                ImageIcon image = new ImageIcon(getClass().getResource("/resources/1.png"));
+//                g.drawImage(image.getImage(),7,40,90,90,null);
+//                break;
             default:g.setColor(Color.BLUE);
                 g.drawString("The End!!",50,22);
                 step = 0;
