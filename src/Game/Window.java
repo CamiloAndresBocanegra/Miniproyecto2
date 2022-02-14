@@ -1,9 +1,5 @@
 /*
 TODO:
-    - randomly  pick words from the available words list
-    - change word each interval of time
-    - record points / words answered correctly
-    - unlock levels by finishing
 */
 package Game;
 
@@ -26,8 +22,11 @@ public class Window extends JFrame {
     //Private:
     Header headerProject;
     Canvas canvas;
-    CustomTimer timer;
+    JPanel squareColor;
+    Timer memorizingTimer;
+    Timer rememberingTimer;
     TimerListener timerListener;
+    AnswerListener answerListener;
     TimerButtonListener timerButtonListener;
     Random random;
     JTextField textLineField;
@@ -40,7 +39,9 @@ public class Window extends JFrame {
 
     JButton gameStartButton;
     JPanel memorizingPanel;
-    JPanel squareColor;
+    JLabel currentWordLabel;
+    JButton yesButton;
+    JButton noButton;
 
     LevelSelectorListener levelSelectorListener;
 
@@ -51,7 +52,7 @@ public class Window extends JFrame {
     ArrayList<String> usersFileLines;
     int currentUserIndex;
     int currentMaxLevel;
-    int currentTotalWords;
+    int totalWordsToRemember;
     int currentMinimumSuccessRate;
     int currentPoints;
     boolean memorizingRound;
@@ -59,6 +60,8 @@ public class Window extends JFrame {
     String[] completeWordsArray;
     ArrayList<String> availableWordsList;
     ArrayList<String> wordsToRemember;
+    ArrayList<String> levelWords;
+    ArrayList<String> auxArrayList;
 
     final int TOTAL_LEVELS = 8;
     // center cl strings
@@ -88,7 +91,7 @@ public class Window extends JFrame {
     }
 
     /**
-     * This method is used to set up the default JComponent Configuration,
+     * This method is used to sekt up the default JComponent Configuration,
      * create Listener and control Objects used for the GUI class
      */
     private void initWindow() {
@@ -98,8 +101,10 @@ public class Window extends JFrame {
         add(exitButton, BorderLayout.NORTH);
 
         // Initializing
+        answerListener = new AnswerListener();
         timerListener = new TimerListener();
-        timer = new CustomTimer(1000, timerListener);
+        memorizingTimer = new Timer(500, timerListener);
+        rememberingTimer = new Timer(500, answerListener);
         random = new Random();
         fileManager = new FileManager();
 
@@ -131,13 +136,12 @@ public class Window extends JFrame {
         timerButtonListener = new TimerButtonListener();
         gameStartButton.addActionListener(timerButtonListener);
         memorizingPanel = new JPanel(new GridLayout(1, 3));
-        AnswerButtons answerListener = new AnswerButtons();
-        JButton yesButton = new JButton("Yes");
+        yesButton = new JButton("I KNOW THAT WORD");
         yesButton.addActionListener(answerListener);
         memorizingPanel.add(yesButton);
-        JLabel currentWord = new JLabel();
-        memorizingPanel.add(currentWord);
-        JButton noButton = new JButton("No");
+        currentWordLabel = new JLabel();
+        memorizingPanel.add(currentWordLabel);
+        noButton = new JButton("I DON't KNOW THAT WORD");
         noButton.addActionListener(answerListener);
         memorizingPanel.add(noButton);
 
@@ -156,12 +160,10 @@ public class Window extends JFrame {
 
         // pass words from array to the arraylist
         completeWordsArray = fileManager.readFileInString("words.txt").split("\n");
-        availableWordsList = new ArrayList<String>();
-        for (int i = 0;
-             i < completeWordsArray.length;
-             i++) {
-            availableWordsList.add(completeWordsArray[i]);
-        }
+        availableWordsList = new ArrayList<String>(Arrays.asList(completeWordsArray));
+        wordsToRemember = new ArrayList<String>();
+        levelWords = new ArrayList<String>();
+        auxArrayList = new ArrayList<String>();
 
         // end
         textLineField.grabFocus();
@@ -206,51 +208,6 @@ public class Window extends JFrame {
         }
     }
 
-    /**
-     * inner class that extends an Adapter Class or implements Listeners used by GUI class
-     */
-    private class TimerListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            timer.incrementSecond();
-            int secondsPassed = timer.getCurrentSecond();
-            if (memorizingRound) {
-                int n = 2;
-                if ((secondsPassed % n) == 0) {
-                    if (secondsPassed > n * currentTotalWords) {
-                        timer.stop();
-                        memorizingRound = false;
-                        centerCL.show(centerPanel, START_BUTTON_PANEL);
-                    } else {
-                        //TODO: next word
-                    }
-                }
-            } else {
-                int n = 1;
-                if ((secondsPassed % n) == 0) {
-                    if (secondsPassed > n * currentTotalWords * 2) {
-                        timer.stop();
-                        memorizingRound = true;
-                        centerCL.show(centerPanel, START_BUTTON_PANEL);
-                    } else {
-                        //TODO: show next word
-                    }
-                } else {
-
-                }
-            }
-        }
-    }
-
-    private class TimerButtonListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            timer.start();
-            timer.resetSeconds();
-            centerCL.show(centerPanel, MEMORIZING_PANEL);
-        }
-    }
-
     private class LevelSelectorListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -260,53 +217,129 @@ public class Window extends JFrame {
             switch(selectedLevel)
             {
                 case 1:
-                    currentTotalWords = 10;
+                    totalWordsToRemember = 10;
                     currentMinimumSuccessRate = 70;
                     break;
                 case 2:
-                    currentTotalWords = 20;
+                    totalWordsToRemember = 20;
                     currentMinimumSuccessRate = 70;
                     break;
                 case 3:
-                    currentTotalWords = 25;
-                currentMinimumSuccessRate = 75;
-                break;
+                    totalWordsToRemember = 25;
+                    currentMinimumSuccessRate = 75;
+                    break;
                 case 4:
-                    currentTotalWords = 30;
-                currentMinimumSuccessRate = 80;
-                break;
+                    totalWordsToRemember = 30;
+                    currentMinimumSuccessRate = 80;
+                    break;
                 case 5:
-                    currentTotalWords = 35;
+                    totalWordsToRemember = 35;
                     currentMinimumSuccessRate = 80;
                     break;
                 case 6:
-                    currentTotalWords = 40;
+                    totalWordsToRemember = 40;
                     currentMinimumSuccessRate = 85;
                     break;
                 case 7:
-                    currentTotalWords = 50;
+                    totalWordsToRemember = 50;
                     currentMinimumSuccessRate = 90;
                     break;
                 case 8:
                 default:
-                    currentTotalWords = 60;
+                    totalWordsToRemember = 60;
                     currentMinimumSuccessRate = 90;
                     break;
             }
+            memorizingRound = true;
+            while(levelWords.size() < totalWordsToRemember*2)
+            {
+                levelWords.add(availableWordsList.remove(random.nextInt(availableWordsList.size())));
+            }
+            ArrayList<String> tempArray = (ArrayList<String>)levelWords.clone();
+            while(wordsToRemember.size() < totalWordsToRemember)
+            {
+                wordsToRemember.add(tempArray.remove(random.nextInt(tempArray.size())));
+            }
             centerCL.show(centerPanel, START_BUTTON_PANEL); //TODO: get random words from words list
-
         }
     }
 
-    private class AnswerButtons implements ActionListener
+    private class TimerButtonListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if(memorizingRound)
+            {
+                memorizingTimer.start();
+                centerCL.show(centerPanel, MEMORIZING_PANEL);
+                yesButton.setEnabled(false);
+                noButton.setEnabled(false);
+            }else{
+                rememberingTimer.start();
+                centerCL.show(centerPanel, MEMORIZING_PANEL);
+                yesButton.setEnabled(true);
+                noButton.setEnabled(true);
+            }
+        }
+    }
+
+    /**
+     * inner class that extends an Adapter Class or implements Listeners used by GUI class
+     */
+    private class TimerListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (memorizingRound) {
+                if (wordsToRemember.size() > 0) {
+                    String word = wordsToRemember.remove(random.nextInt(wordsToRemember.size()));
+                    currentWordLabel.setText(word);
+                } else {
+                    memorizingTimer.stop();
+                    memorizingRound = false;
+                    wordsToRemember = (ArrayList<String>) auxArrayList.clone();
+                    centerCL.show(centerPanel, START_BUTTON_PANEL);
+                }
+            }
+        }
+    }
+
+    private class AnswerListener implements ActionListener
     {
         @Override
         public void actionPerformed(ActionEvent e) {
-            if(((JButton)e.getSource()).getText() == "Yes")
+
+            String word = currentWordLabel.getText();
+            if( (e.getSource()) == yesButton && wordsToRemember.contains(word))
             {
-
-            }else{ //TODO: handle cases
-
+                currentPoints++;
+            }else if((e.getSource()) == noButton &&
+                    !wordsToRemember.contains(word))
+            {
+                currentPoints++;
+            }
+            if (levelWords.size() > 0)
+            {
+                rememberingTimer.restart();
+                word = levelWords.remove(random.nextInt(levelWords.size()));
+                currentWordLabel.setText(word);
+            }else{ // finish level
+                if(currentPoints*100/totalWordsToRemember > currentMinimumSuccessRate)
+                {
+                    if(selectedLevel == currentMaxLevel && currentMaxLevel<8){
+                        currentMaxLevel++;
+                        String newUserLine = usersFileLines.get(currentUserIndex);
+                        newUserLine = newUserLine.substring(0, newUserLine.length()-1);
+                        newUserLine += currentMaxLevel;
+                        usersFileLines.set(currentUserIndex, newUserLine);
+                    }
+                }
+                rememberingTimer.stop();
+                memorizingRound = true;
+                availableWordsList = new ArrayList<String>(Arrays.asList(completeWordsArray));
+                centerCL.show(centerPanel, LEVEL_SELECTOR);
+                for(int i=0; i<currentMaxLevel; i++)
+                {
+                    levelButtons[i].setEnabled(true);
+                }
             }
         }
     }
