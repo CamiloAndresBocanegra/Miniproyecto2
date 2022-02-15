@@ -31,11 +31,8 @@ public class Window extends JFrame {
     JLabel infoOutputLabel;
     JPanel centerPanel;
     CardLayout centerCL;
-    JPanel levelSelectorPanel;
     JButton[] levelButtons;
 
-    JButton gameStartButton;
-    JPanel memorizingPanel;
     JLabel currentWordLabel;
     JButton yesButton;
     JButton noButton;
@@ -45,7 +42,7 @@ public class Window extends JFrame {
     LineInputListener lineInputListener;
 
     //GameState
-    int selectedLevel; //might not be necesary
+    int selectedLevel;
     ArrayList<String> usersFileLines;
     int currentUserIndex = 0;
     int currentMaxLevel = 0;
@@ -61,8 +58,8 @@ public class Window extends JFrame {
     ArrayList<String> auxArrayList;
 
     // constants
-    final String USERSFILENAME = "users.txt";
-    final String WORDSFILENAME = "words.txt";
+    final String USERS_FILE_NAME = "users.txt";
+    final String WORDS_FILE_NAME = "words.txt";
     final int TOTAL_LEVELS = 8;
     // center cl strings
     final String LEVEL_SELECTOR = "levelselector";
@@ -86,7 +83,7 @@ public class Window extends JFrame {
 
 //        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setExtendedState(getExtendedState() | MAXIMIZED_BOTH);
-        setSize(1360, 755);
+//        setSize(1360, 755);
     }
 
     /**
@@ -107,7 +104,8 @@ public class Window extends JFrame {
         random = new Random();
         fileManager = new FileManager();
         infoOutputLabel = new JLabel();
-        infoOutputLabel.setText("Introduce your Username");
+        infoOutputLabel.setText("What's your Username");
+        infoOutputLabel.setFont(new Font(Font.DIALOG,Font.BOLD,30));
         infoOutputLabel.setHorizontalAlignment(JLabel.CENTER);
 
         add(infoOutputLabel, BorderLayout.NORTH);
@@ -119,11 +117,12 @@ public class Window extends JFrame {
         textLineField.addActionListener(lineInputListener);
         textLineField.setFocusable(true);
         textLineField.setPreferredSize(new Dimension(700, 40));
+        textLineField.setFont(new Font(Font.DIALOG,Font.BOLD,36));
         textLineField.setHorizontalAlignment(0);
         loginPanel.add(textLineField, BorderLayout.CENTER);
 
         // Setting up level selector
-        levelSelectorPanel = new JPanel();
+        JPanel levelSelectorPanel = new JPanel();
         levelSelectorPanel.setLayout(new GridLayout(2, 4));
         levelSelectorListener = new LevelSelectorListener();
         levelButtons = new JButton[TOTAL_LEVELS];
@@ -134,21 +133,26 @@ public class Window extends JFrame {
             levelButtons[i] = new JButton("Level " + (i + 1));
             levelButtons[i].addActionListener(levelSelectorListener);
             levelButtons[i].setEnabled(false);
+            levelButtons[i].setFont(new Font(Font.DIALOG,Font.BOLD,36));
             levelSelectorPanel.add(levelButtons[i]);
         }
 
         // Setting up Game Panels
-        gameStartButton = new JButton("Start");
+        JButton gameStartButton = new JButton("Start");
         StartButtonListener = new StartButtonListener();
         gameStartButton.addActionListener(StartButtonListener);
-        memorizingPanel = new JPanel(new GridLayout(1, 3));
+        gameStartButton.setFont(new Font(Font.DIALOG,Font.BOLD,36));
+        JPanel memorizingPanel = new JPanel(new GridLayout(1, 3));
         yesButton = new JButton("I KNOW THAT WORD");
         yesButton.addActionListener(answerListener);
+        yesButton.setFont(new Font(Font.DIALOG,Font.BOLD,36));
         memorizingPanel.add(yesButton);
         currentWordLabel = new JLabel(); // TODO: customize jlabel
         currentWordLabel.setHorizontalAlignment(JLabel.CENTER);
+        currentWordLabel.setFont(new Font(Font.DIALOG,Font.BOLD,36));
         memorizingPanel.add(currentWordLabel, BorderLayout.CENTER);
         noButton = new JButton("I DON'T KNOW THAT WORD");
+        noButton.setFont(new Font(Font.DIALOG,Font.BOLD,36));
         noButton.addActionListener(answerListener);
         memorizingPanel.add(noButton);
 
@@ -166,7 +170,7 @@ public class Window extends JFrame {
 //        centerCL.show(centerPanel, LEVEL_SELECTOR);
 
         // pass words from array to the arraylist
-        completeWordsArray = fileManager.readFileInString(WORDSFILENAME).split("\n");
+        completeWordsArray = fileManager.readFileInString(WORDS_FILE_NAME).split("\n");
         availableWordsList = new ArrayList<String>(Arrays.asList(completeWordsArray));
         wordsToRemember = new ArrayList<String>();
         levelWords = new ArrayList<String>();
@@ -183,7 +187,7 @@ public class Window extends JFrame {
     private class LineInputListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            usersFileLines = (fileManager.readFileInArray(USERSFILENAME));
+            usersFileLines = (fileManager.readFileInArray(USERS_FILE_NAME));
             String lineInput = textLineField.getText();
             textLineField.setText("");
             for (int lineIndex = 0;
@@ -193,7 +197,7 @@ public class Window extends JFrame {
                 if (lineInput.equals(userArray[0])) {
                     currentUserIndex = lineIndex;
                     currentMaxLevel = Integer.parseInt(userArray[1]);
-                    for(int i = 0; i < currentMaxLevel; i++) //TODO: maybe extract this in a function
+                    for(int i = 0; i < currentMaxLevel; i++)
                     {
                         levelButtons[i].setEnabled(true);
                     }
@@ -204,9 +208,9 @@ public class Window extends JFrame {
             }
             currentUserIndex = usersFileLines.size();
             usersFileLines.add(lineInput + ";1");
-            fileManager.writeLine(USERSFILENAME, lineInput + ";1");
+            fileManager.writeLine(USERS_FILE_NAME, lineInput + ";1");
             currentMaxLevel = 1;
-            for(int i = 0; i < currentMaxLevel; i++) // TODO: maybe extract this in a function
+            for(int i = 0; i < currentMaxLevel; i++)
             {
                 levelButtons[i].setEnabled(true);
             }
@@ -258,7 +262,6 @@ public class Window extends JFrame {
                     currentMinimumSuccessRate = 90;
                     break;
             }
-            totalWordsToRemember = 5;
             memorizingRound = true;
             levelWords.clear();
             wordsToRemember.clear();
@@ -274,7 +277,7 @@ public class Window extends JFrame {
             auxArrayList = (ArrayList<String>) wordsToRemember.clone();
 
             infoOutputLabel.setText("Get Ready To Start Memorizing");
-            centerCL.show(centerPanel, START_BUTTON_PANEL); //TODO: get random words from words list
+            centerCL.show(centerPanel, START_BUTTON_PANEL);
         }
     }
 
@@ -287,7 +290,7 @@ public class Window extends JFrame {
                 centerCL.show(centerPanel, MEMORIZING_PANEL);
                 yesButton.setEnabled(false);
                 noButton.setEnabled(false);
-                timerListener.actionPerformed(new ActionEvent(memorizingPanel, 0, null));
+                timerListener.actionPerformed(new ActionEvent(memorizingTimer, 0, null));
 
                 infoOutputLabel.setText("Words To Memorize: "+ totalWordsToRemember);
             }else{
@@ -355,7 +358,7 @@ public class Window extends JFrame {
                         newUserLine = newUserLine.substring(0, newUserLine.length()-1);
                         newUserLine += currentMaxLevel;
                         usersFileLines.set(currentUserIndex, newUserLine);
-                        fileManager.writeEntireFile(USERSFILENAME, usersFileLines);
+                        fileManager.writeEntireFile(USERS_FILE_NAME, usersFileLines);
                     }
                 }
                 infoOutputLabel.setText("Last Score: "+ currentPoints +", Select a Level");
