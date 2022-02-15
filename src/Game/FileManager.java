@@ -5,18 +5,18 @@ import java.io.*;
 import java.util.ArrayList;
 
 public class FileManager {
-    FileReader fileReader;
     BufferedReader bufferReader;
+    InputStream inputStream;
     FileWriter fileWriter;
     BufferedWriter bufferWriter;
-    final String RESOURCES_PATH = "src/resources/";
+    String resourcesPath = "/resources/";
 
     public ArrayList<String> readFileInArray(String fileName) {
         ArrayList<String> TextRead = new ArrayList<String>();
 
         try {
-            fileReader = new FileReader(RESOURCES_PATH + fileName);
-            bufferReader = new BufferedReader(fileReader);
+            inputStream = FileManager.class.getResourceAsStream(resourcesPath+fileName);
+            bufferReader = new BufferedReader(new InputStreamReader(inputStream));
             String line = bufferReader.readLine();
 
             while(line != null){
@@ -40,8 +40,8 @@ public class FileManager {
     public String readFileInString(String fileName) {
         String TextRead = "";
         try {
-            fileReader = new FileReader(RESOURCES_PATH + fileName);
-            bufferReader = new BufferedReader(fileReader);
+            inputStream = FileManager.class.getResourceAsStream(resourcesPath+fileName);
+            bufferReader = new BufferedReader(new InputStreamReader(inputStream));
             String line = bufferReader.readLine();
             while(line != null){
                 TextRead += line;
@@ -62,27 +62,12 @@ public class FileManager {
         return TextRead;
     }
 
-    public void writeLine(String filename, String newLine){
-        try {
-            fileWriter = new FileWriter(RESOURCES_PATH + filename,true);
-            bufferWriter = new BufferedWriter(fileWriter);
-            bufferWriter.write(newLine);
-            bufferWriter.newLine();
-            // ERROR CODE{ ------------------------------------------------------------
-        } catch (IOException e) {
-            e.printStackTrace();
-        }finally{
-            try {
-                bufferWriter.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }// }END ERROR CODE ------------------------------------------------------------
-    }
     public void writeEntireFile(String filename, ArrayList<String> textLines)
     {
         try {
-            fileWriter = new FileWriter(RESOURCES_PATH + filename,false);
+            File userstxt = new File("src/resources/users.txt");
+            userstxt.createNewFile();
+            fileWriter = new FileWriter(userstxt,false);
             bufferWriter = new BufferedWriter(fileWriter);
             for(int line = 0; line < textLines.size(); line++)
             {

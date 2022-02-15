@@ -204,7 +204,6 @@ public class Window extends JFrame {
             }
             currentUserIndex = usersFileLines.size();
             usersFileLines.add(lineInput + ";1");
-            fileManager.writeLine(USERS_FILE_NAME, lineInput + ";1");
             currentMaxLevel = 1;
             for(int i = 0; i < currentMaxLevel; i++)
             {
@@ -346,7 +345,7 @@ public class Window extends JFrame {
                 String infoString = "LeftWords: "+ (levelWords.size()+1) +", Points: "+ currentPoints;
                 infoOutputLabel.setText(infoString);
             }else{ // finish level
-                if((currentPoints*100)/totalWordsToRemember >= currentMinimumSuccessRate)
+                if((currentPoints*100)/(totalWordsToRemember*2) >= currentMinimumSuccessRate)
                 {
                     if(selectedLevel == currentMaxLevel && currentMaxLevel<8){
                         currentMaxLevel++;
