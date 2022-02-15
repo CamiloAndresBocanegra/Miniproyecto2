@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="Miniproyecto2:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/Miniproyecto2_jar</output-path>
+    <root id="archive" name="Miniproyecto2.jar">
+      <element id="module-output" name="Miniproyecto2" />
+    </root>
+  </artifact>
+</component>
