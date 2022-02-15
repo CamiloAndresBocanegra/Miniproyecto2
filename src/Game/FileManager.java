@@ -79,5 +79,27 @@ public class FileManager {
             }
         }// }END ERROR CODE ------------------------------------------------------------
     }
+    public void writeEntireFile(String filename, ArrayList<String> textLines)
+    {
+        try {
+            fileWriter = new FileWriter(RESOURCES_PATH + filename,false);
+            bufferWriter = new BufferedWriter(fileWriter);
+            for(int line = 0; line < textLines.size(); line++)
+            {
+                bufferWriter.write(textLines.get(line));
+                bufferWriter.newLine();
+            }
+            // ERROR CODE{ ------------------------------------------------------------
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally{
+            try {
+                bufferWriter.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }// }END ERROR CODE ------------------------------------------------------------
+
+    }
 
 }
