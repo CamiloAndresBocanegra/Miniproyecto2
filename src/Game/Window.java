@@ -10,8 +10,7 @@ import java.util.Random;
 
 /**
  * This class is used for ...
- * @autor Paola-J Rodriguez-C paola.rodriguez@correounivalle.edu.co
- * @version v.1.0.0 date:21/11/2021
+ * @autor
  */
 public class Window extends JFrame {
     //Private:
@@ -84,8 +83,6 @@ public class Window extends JFrame {
     }
 
     /**
-     * This method is used to sekt up the default JComponent Configuration,
-     * create Listener and control Objects used for the GUI class
      */
     private void initWindow() {
         // EXIT BUTTON
@@ -192,7 +189,6 @@ public class Window extends JFrame {
 
 
     /**
-     * inner class that extends an Adapter Class or implements Listeners used by GUI class
      */
     private class LineInputListener implements ActionListener {
         @Override
@@ -316,7 +312,6 @@ public class Window extends JFrame {
     }
 
     /**
-     * inner class that extends an Adapter Class or implements Listeners used by GUI class
      */
     private class MemorizingTimerListener implements ActionListener {
         @Override
@@ -373,7 +368,9 @@ public class Window extends JFrame {
                         fileManager.writeEntireFile(USERS_FILE_NAME, usersFileLines);
                     }
                 }
-                infoOutputLabel.setText("Last Score: "+ currentPoints +", Select a Level");
+                int minimumPointsToWin = (currentMinimumSuccessRate*(totalWordsToRemember*2)/100);
+                infoOutputLabel.setText("Last Score: "+ currentPoints +"," +
+                        " Minimum points to pass level: "+ minimumPointsToWin);
                 currentPoints = 0;
                 rememberingTimer.stop();
                 memorizingRound = true;
@@ -388,7 +385,6 @@ public class Window extends JFrame {
     }
 
     /**
-     * inner class that extends an Adapter Class or implements Listeners used by GUI class
      */
     private class ExitListener implements ActionListener {
         @Override
