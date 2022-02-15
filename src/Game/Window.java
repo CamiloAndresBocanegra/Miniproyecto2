@@ -17,7 +17,7 @@ public class Window extends JFrame {
     //Private:
     Timer memorizingTimer;
     Timer rememberingTimer;
-    TimerListener timerListener;
+    MemorizingTimerListener memorizingTimerListener;
     AnswerListener answerListener;
     StartButtonListener StartButtonListener;
     Random random;
@@ -32,6 +32,7 @@ public class Window extends JFrame {
     JLabel currentWordLabel;
     JButton yesButton;
     JButton noButton;
+    JButton skipButton;
 
     LevelSelectorListener levelSelectorListener;
 
@@ -90,12 +91,13 @@ public class Window extends JFrame {
         // EXIT BUTTON
         JButton exitButton = new JButton("EXIT");
         exitButton.addActionListener(new ExitListener());
+        exitButton.setFont(new Font(Font.DIALOG,Font.BOLD,30));
         add(exitButton, BorderLayout.SOUTH);
 
         // Initializing
         answerListener = new AnswerListener();
-        timerListener = new TimerListener();
-        memorizingTimer = new Timer(5000, timerListener);
+        memorizingTimerListener = new MemorizingTimerListener();
+        memorizingTimer = new Timer(5000, memorizingTimerListener);
         rememberingTimer = new Timer(7000, answerListener);
         random = new Random();
         fileManager = new FileManager();
@@ -138,15 +140,27 @@ public class Window extends JFrame {
         StartButtonListener = new StartButtonListener();
         gameStartButton.addActionListener(StartButtonListener);
         gameStartButton.setFont(new Font(Font.DIALOG,Font.BOLD,36));
+
         JPanel memorizingPanel = new JPanel(new GridLayout(1, 3));
+
         yesButton = new JButton("I KNOW THAT WORD");
         yesButton.addActionListener(answerListener);
         yesButton.setFont(new Font(Font.DIALOG,Font.BOLD,36));
         memorizingPanel.add(yesButton);
-        currentWordLabel = new JLabel(); // TODO: customize jlabel
+
+        currentWordLabel = new JLabel();
         currentWordLabel.setHorizontalAlignment(JLabel.CENTER);
         currentWordLabel.setFont(new Font(Font.DIALOG,Font.BOLD,36));
-        memorizingPanel.add(currentWordLabel, BorderLayout.CENTER);
+        JPanel wordPanel = new JPanel(new BorderLayout());
+        wordPanel.add(currentWordLabel, BorderLayout.CENTER);
+
+        skipButton = new JButton("Skip Word");
+        skipButton.addActionListener(memorizingTimerListener);
+        skipButton.setFont(new Font(Font.DIALOG,Font.BOLD,30));
+        wordPanel.add(skipButton, BorderLayout.SOUTH);
+
+        memorizingPanel.add(wordPanel, BorderLayout.CENTER);
+
         noButton = new JButton("I DON'T KNOW THAT WORD");
         noButton.setFont(new Font(Font.DIALOG,Font.BOLD,36));
         noButton.addActionListener(answerListener);
@@ -258,6 +272,7 @@ public class Window extends JFrame {
                     break;
             }
             memorizingRound = true;
+            skipButton.setEnabled(true);
             levelWords.clear();
             wordsToRemember.clear();
             while(levelWords.size() < totalWordsToRemember*2)
@@ -285,7 +300,7 @@ public class Window extends JFrame {
                 centerCL.show(centerPanel, MEMORIZING_PANEL);
                 yesButton.setEnabled(false);
                 noButton.setEnabled(false);
-                timerListener.actionPerformed(new ActionEvent(memorizingTimer, 0, null));
+                memorizingTimerListener.actionPerformed(new ActionEvent(memorizingTimer, 0, null));
 
                 infoOutputLabel.setText("Words To Memorize: "+ totalWordsToRemember);
             }else{
@@ -303,12 +318,13 @@ public class Window extends JFrame {
     /**
      * inner class that extends an Adapter Class or implements Listeners used by GUI class
      */
-    private class TimerListener implements ActionListener {
+    private class MemorizingTimerListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             if (memorizingRound)
             {
                 if (wordsToRemember.size() > 0) {
+                    memorizingTimer.restart();
                     String word = wordsToRemember.remove(random.nextInt(wordsToRemember.size()));
                     currentWordLabel.setText(word);
                     infoOutputLabel.setText("Words to memorize: "+ (wordsToRemember.size()+1));
@@ -317,6 +333,7 @@ public class Window extends JFrame {
                     memorizingRound = false;
                     wordsToRemember = (ArrayList<String>) auxArrayList.clone();
                     infoOutputLabel.setText("Get ready to Start remembering");
+                    skipButton.setEnabled(false);
                     centerCL.show(centerPanel, START_BUTTON_PANEL);
                 }
             }
